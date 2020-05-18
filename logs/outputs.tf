@@ -1,4 +1,4 @@
 
 output "id" {
-  value = azurerm_frontdoor.frontdoor.id
+  value = module.frontdoor.id
 }
