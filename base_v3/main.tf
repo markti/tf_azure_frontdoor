@@ -31,6 +31,7 @@ resource "azurerm_frontdoor" "frontdoor" {
     backend {
       host_header = var.backend_host_header
       address     = var.backend_fqdn
+      http_port   = 80
       https_port  = 8442
     }
 
