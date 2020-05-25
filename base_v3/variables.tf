@@ -13,13 +13,24 @@ variable "resource_group_name" {
 variable "app_name" { }
 variable "env_name" { }
 
-/*
- * 
- */
-variable "frontend_hostname" {
-    description = "Hostname that will be used for the front end. frontend_hostname = foo.yourdomain.com. A CNAME must be created pointing 'foo' to 'name.azurefd.net'"
- }
-variable "backend_host_header" { }
-variable "backend_fqdn" { }
-variable "backend_healthprobe_path" { }
 variable "loganalytics_workspace_id" { }
+
+variable "frontend" {
+  type = object({
+
+    host_name        = string
+
+  })
+}
+
+variable "backend" {
+  type = object({
+
+    host_header      = string
+    address          = string
+    healthprobe_path = string
+    http_port        = string
+    https_port       = string
+
+  })
+}

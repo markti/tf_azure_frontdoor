@@ -23,16 +23,16 @@ resource "azurerm_frontdoor" "frontdoor" {
   backend_pool_health_probe {
     name      = "baseline"
     protocol  = "Https"
-    path      = var.backend_healthprobe_path
+    path      = var.backend.healthprobe_path
   }
 
   backend_pool {
     name = "PrimaryBackend"
     backend {
-      host_header = var.backend_host_header
-      address     = var.backend_fqdn
-      http_port   = 80
-      https_port  = 8442
+      host_header = var.backend.host_header
+      address     = var.backend.address
+      http_port   = var.backend.http_port
+      https_port  = var.backend.https_port
     }
 
     load_balancing_name = "baseline"
@@ -48,7 +48,7 @@ resource "azurerm_frontdoor" "frontdoor" {
 
   frontend_endpoint {
     name                              = "PrimaryEndpoint"
-    host_name                         = var.frontend_hostname
+    host_name                         = var.frontend.host_name
     custom_https_provisioning_enabled = true
 
     custom_https_configuration {
