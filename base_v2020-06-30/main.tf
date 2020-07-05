@@ -4,6 +4,30 @@ resource "azurerm_frontdoor" "frontdoor" {
 
   enforce_backend_pools_certificate_name_check = false
 
+  tags = {
+    app = var.environment.app_name
+    env = var.environment.env_name
+  }
+
+  frontend_endpoint {
+    name                              = "DefaultEndpoint"
+    host_name                         = "${var.service.name}.azurefd.net"
+    custom_https_provisioning_enabled = false
+
+  }
+
+  backend_pool_load_balancing {
+    name = var.backend_settings.name
+    additional_latency_milliseconds = 1000
+  }
+
+  backend_pool_health_probe {
+    name      = var.backend_settings.name
+    protocol  = "Https"
+    path      = var.backend_settings.healthprobe_path
+  }
+
+  
   # PRIMARY
   routing_rule {
     name               = "PrimaryRoutingRules"
@@ -16,17 +40,6 @@ resource "azurerm_frontdoor" "frontdoor" {
     }
   }
 
-  backend_pool_load_balancing {
-    name = "baseline"
-    additional_latency_milliseconds = 1000
-  }
-
-  backend_pool_health_probe {
-    name      = "baseline"
-    protocol  = "Https"
-    path      = var.healthprobe_settings.path
-  }
-
   backend_pool {
     name = "PrimaryBackend"
     backend {
@@ -36,8 +49,20 @@ resource "azurerm_frontdoor" "frontdoor" {
       https_port  = var.primary_backend.https_port
     }
 
-    load_balancing_name = "baseline"
-    health_probe_name   = "baseline"
+    load_balancing_name = var.backend_settings.name
+    health_probe_name   = var.backend_settings.name
+  }
+
+  # SECONDARY ###
+  routing_rule {
+    name               = "SecondaryRoutingRules"
+    accepted_protocols = [ "Https" ]
+    patterns_to_match  = [ "/*" ]
+    frontend_endpoints = [ "DefaultEndpoint" ]
+    forwarding_configuration {
+      forwarding_protocol = "MatchRequest"
+      backend_pool_name   = "SecondaryBackend"
+    }
   }
 
   backend_pool {
@@ -49,20 +74,9 @@ resource "azurerm_frontdoor" "frontdoor" {
       https_port  = var.secondary_backend.https_port
     }
 
-    load_balancing_name = "baseline"
-    health_probe_name   = "baseline"
+    load_balancing_name = var.backend_settings.name
+    health_probe_name   = var.backend_settings.name
   }
-
-  frontend_endpoint {
-    name                              = "DefaultEndpoint"
-    host_name                         = "${var.service.name}.azurefd.net"
-    custom_https_provisioning_enabled = false
-
-  }
-
-  tags = {
-    app = var.environment.app_name
-    env = var.environment.env_name
-  }
+  ###############
 
 }

@@ -37,10 +37,11 @@ variable "secondary_backend" {
 
   })
 }
-variable "healthprobe_settings" {
+variable "backend_settings" {
   type = object({
 
-    path = string
+    name = string
+    healthprobe_path = string
 
   })
 }
