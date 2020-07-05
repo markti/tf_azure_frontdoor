@@ -4,11 +4,12 @@ resource "azurerm_frontdoor" "frontdoor" {
 
   enforce_backend_pools_certificate_name_check = false
 
+  # PRIMARY
   routing_rule {
     name               = "PrimaryRoutingRules"
     accepted_protocols = [ "Https" ]
     patterns_to_match  = [ "/*" ]
-    frontend_endpoints = [ "PrimaryEndpoint" ]
+    frontend_endpoints = [ "DefaultEndpoint" ]
     forwarding_configuration {
       forwarding_protocol = "MatchRequest"
       backend_pool_name   = "PrimaryBackend"
@@ -23,16 +24,29 @@ resource "azurerm_frontdoor" "frontdoor" {
   backend_pool_health_probe {
     name      = "baseline"
     protocol  = "Https"
-    path      = var.backend.healthprobe_path
+    path      = var.healthprobe_settings.path
   }
 
   backend_pool {
     name = "PrimaryBackend"
     backend {
-      host_header = var.backend.host_header
-      address     = var.backend.address
-      http_port   = var.backend.http_port
-      https_port  = var.backend.https_port
+      host_header = var.primary_backend.host_header
+      address     = var.primary_backend.address
+      http_port   = var.primary_backend.http_port
+      https_port  = var.primary_backend.https_port
+    }
+
+    load_balancing_name = "baseline"
+    health_probe_name   = "baseline"
+  }
+
+  backend_pool {
+    name = "SecondaryBackend"
+    backend {
+      host_header = var.secondary_backend.host_header
+      address     = var.secondary_backend.address
+      http_port   = var.secondary_backend.http_port
+      https_port  = var.secondary_backend.https_port
     }
 
     load_balancing_name = "baseline"
@@ -44,16 +58,6 @@ resource "azurerm_frontdoor" "frontdoor" {
     host_name                         = "${var.service.name}.azurefd.net"
     custom_https_provisioning_enabled = false
 
-  }
-
-  frontend_endpoint {
-    name                              = "PrimaryEndpoint"
-    host_name                         = var.frontend.host_name
-    custom_https_provisioning_enabled = true
-
-    custom_https_configuration {
-      certificate_source    = "FrontDoor"
-    }
   }
 
   tags = {

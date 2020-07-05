@@ -17,21 +17,30 @@ variable "service" {
 
   })
 }
-variable "frontend" {
-  type = object({
-
-    host_name        = string
-
-  })
-}
-variable "backend" {
+variable "primary_backend" {
   type = object({
 
     host_header      = string
     address          = string
-    healthprobe_path = string
     http_port        = string
     https_port       = string
+
+  })
+}
+variable "secondary_backend" {
+  type = object({
+
+    host_header      = string
+    address          = string
+    http_port        = string
+    https_port       = string
+
+  })
+}
+variable "healthprobe_settings" {
+  type = object({
+
+    path = string
 
   })
 }
